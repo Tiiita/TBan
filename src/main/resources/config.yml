@@ -1,0 +1,29 @@
+mongodb: #We are using mongodb, please set up a mongodb database and specify the credentials here
+  database: "yourDBName"
+  port: 27017
+  host: "yourHostIp"
+  username: "yourUsername"
+  password: "yourPassword"
+
+
+punish-screen:
+  - '&4&lYour Server'
+  - '&a'
+  - '&cIt looks like you have committed an offence'
+  - '§cagainst our rules. You have been punished!'
+  - '&e'
+  - '&7Reason: §c{reason}'
+  - '&7Staff: §c{staff}'
+  - '&7Time: §c{time}'
+  - '§7BanID: §c{banID}'
+  - '&b'
+  - '&7You appeal at &cyourdiscord.link"'
+reasons:
+  1:
+    type: 'ban' #Available types: "ban", "mute", "ipban"
+    display-name: 'Cheating'
+    duration:
+      1: '30D'
+      2: '60D'
+      3: 'Permanently'
+

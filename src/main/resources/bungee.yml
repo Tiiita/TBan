@@ -1,0 +1,4 @@
+name: TBan
+version: '${project.version}'
+main: de.tiiita.tban.TBan
+description: An ID Based Ban System with a clean, fully customizable design. This is the only bansystem you need!
