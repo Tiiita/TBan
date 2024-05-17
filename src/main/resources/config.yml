@@ -6,21 +6,26 @@ mongodb: #We are using mongodb, please set up a mongodb database and specify the
   password: "yourPassword"
 
 
-punish-screen:
-  - '&4&lYour Server'
+ban-screen:
+  - '&4&lBan'
   - '&a'
   - '&cIt looks like you have committed an offence'
-  - '§cagainst our rules. You have been punished!'
+  - '&cagainst our rules. You have been punished!'
   - '&e'
-  - '&7Reason: §c{reason}'
-  - '&7Staff: §c{staff}'
-  - '&7Time: §c{time}'
-  - '§7BanID: §c{banID}'
+  - '&cReason: %reason%'
+  - '&cStaff: %staff%'
+  - '&cRemaining: %remaining%'
+  - '&cPunish ID: %punishId%'
   - '&b'
-  - '&7You appeal at &cyourdiscord.link"'
+  - '&c&nYou appeal at yourdiscord.link'
+
+mute-screen: "\n&cYou have been muted. &7(%remaining% left)\n"
+
+
+
 reasons:
   1:
-    type: 'ban' #Available types: "ban", "mute", "ipban"
+    type: 'ban' #Available types: "ban", "mute"
     display-name: 'Cheating'
     duration:
       1: '30D'

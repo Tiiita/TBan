@@ -5,7 +5,8 @@ import com.mongodb.lang.Nullable;
 public enum PunishmentType {
 
     BAN("Ban", 0),
-    MUTE("Mute", 1);
+    IPBAN("IPBan", 1),
+    MUTE("Mute", 2);
 
     private final String name;
     private final int id;

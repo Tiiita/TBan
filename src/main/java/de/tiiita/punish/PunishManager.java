@@ -1,12 +1,14 @@
 package de.tiiita.punish;
 
 import de.tiiita.punish.reason.PunishReason;
+import de.tiiita.util.ConfigWrapper;
+import de.tiiita.util.MojangNameFetcher;
+import de.tiiita.util.mongodb.DateTimeDifferenceFormatter;
 import de.tiiita.util.mongodb.impl.player.PlayerDocument;
 import de.tiiita.util.mongodb.MongoDBCollectionClient;
 import de.tiiita.util.mongodb.impl.punishments.PunishmentDocument;
 import net.md_5.bungee.api.ProxyServer;
 
-import java.awt.peer.ComponentPeer;
 import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -20,10 +22,12 @@ public class PunishManager {
 
     private final MongoDBCollectionClient<PunishmentDocument> punishmentDatabaseClient;
     private final MongoDBCollectionClient<PlayerDocument> playerDatabaseClient;
+    private final ConfigWrapper config;
 
-    public PunishManager(MongoDBCollectionClient<PunishmentDocument> punishmentDatabaseClient, MongoDBCollectionClient<PlayerDocument> playerDatabaseClient) {
+    public PunishManager(MongoDBCollectionClient<PunishmentDocument> punishmentDatabaseClient, MongoDBCollectionClient<PlayerDocument> playerDatabaseClient, ConfigWrapper config) {
         this.punishmentDatabaseClient = punishmentDatabaseClient;
         this.playerDatabaseClient = playerDatabaseClient;
+        this.config = config;
     }
 
     public void punish(UUID uniqueId, Punishment punishment) {
@@ -58,9 +62,6 @@ public class PunishManager {
                 .thenApplyAsync(punishmentDocument -> punishmentDocument.orElse(null));
     }
 
-    public String getPunishScreen(PunishmentDocument punishmentDocument) {
-        return null;
-    }
 
     public CompletableFuture<PunishmentDocument> getActivePunish(UUID uniqueId, PunishmentType type) {
         return getPlayerPunishments(uniqueId).thenApplyAsync(punishmentDocuments -> {
@@ -110,5 +111,44 @@ public class PunishManager {
             return playerPunishments;
 
         });
+    }
+
+    public CompletableFuture<String> getPunishScreen(PunishmentDocument punishmentDocument, PunishmentType type) {
+        return MojangNameFetcher.fetchName(punishmentDocument.getStaffId()).thenApplyAsync(staffName -> {
+            switch (type) {
+                case IPBAN:
+                case BAN: {
+                    StringBuilder stringBuilder = new StringBuilder();
+                    List<String> stringList = config.getStringList("ban-screen");
+
+                    for (int i = 0; i < stringList.size(); i++) {
+
+                        String line = replacePlaceholder(punishmentDocument, staffName, stringList.get(i));
+
+                        if (i == 0) {
+                            stringBuilder.append(line);
+                        } else stringBuilder.append("\n").append(line);
+                    }
+
+                    return stringBuilder.toString();
+                }
+
+                case MUTE:
+                    return replacePlaceholder(punishmentDocument, staffName, config.getString("mute-screen"));
+                default:
+                    return "§cAn error occurred, please report to admin (TBan - Unkown Punish Type)";
+            }
+        });
+    }
+
+    private String replacePlaceholder(PunishmentDocument punishmentDocument, String staffName, String text) {
+        return text
+                .replaceAll("&", "§")
+                .replaceAll("%reason%", punishmentDocument.getReason().getName())
+                .replaceAll("%punishId%", punishmentDocument.getUniqueId().toString())
+                .replaceAll("%remaining%", DateTimeDifferenceFormatter.formatDateTimeDifference(punishmentDocument.getStartTime(),
+                        punishmentDocument.getEndTime()))
+                .replaceAll("%staff%", staffName);
+
     }
 }
