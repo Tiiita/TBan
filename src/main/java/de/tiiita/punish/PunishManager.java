@@ -52,55 +52,63 @@ public class PunishManager {
             });
         });
     }
-        public CompletableFuture<PunishmentDocument> getPunishment (UUID punishId){
-            return punishmentDatabaseClient.get(punishId)
-                    .thenApplyAsync(punishmentDocument -> punishmentDocument.orElse(null));
-        }
 
-        public String getPunishScreen(int reasonId){
-            return null;
-        }
-
-        public CompletableFuture<Boolean> isPunished (UUID uniqueId){
-            return getPlayerPunishments(uniqueId).thenApplyAsync(punishmentDocuments -> {
-                boolean activePunishment = false;
-
-                for (PunishmentDocument punishmentDocument : punishmentDocuments) {
-                    activePunishment = punishmentDocument.getEndTime().isAfter(OffsetDateTime.now());
-                }
-
-                return activePunishment;
-            });
-        }
-
-        public CompletableFuture<PlayerDocument> getPlayerInfo (UUID uniqueId){
-            return playerDatabaseClient.get(uniqueId)
-                    .thenApplyAsync(playerDocument -> playerDocument.orElse(null));
-        }
-
-
-        public CompletableFuture<PunishmentDocument> getLatestPunishment (UUID uniqueId){
-            return getPlayerPunishments(uniqueId).thenApplyAsync(punishmentDocuments -> {
-                return Collections.max(punishmentDocuments, Comparator.comparing(PunishmentDocument::getStartTime));
-            });
-        }
-
-        public CompletableFuture<List<PunishmentDocument>> getPlayerPunishments (UUID uniqueId){
-            return CompletableFuture.supplyAsync(() -> {
-                PlayerDocument playerInfo = getPlayerInfo(uniqueId).join();
-                if (playerInfo == null) {
-                    ProxyServer.getInstance().getLogger().log(Level.SEVERE, "No player data found with uuid: " + uniqueId);
-                    return null;
-                }
-
-
-                List<PunishmentDocument> playerPunishments = new ArrayList<>();
-                for (UUID currentPunishmentId : playerInfo.getPunishmentIds()) {
-                    playerPunishments.add(punishmentDatabaseClient.getSync(currentPunishmentId).orElse(null));
-                }
-
-                return playerPunishments;
-
-            });
-        }
+    public CompletableFuture<PunishmentDocument> getPunishment(UUID punishId) {
+        return punishmentDatabaseClient.get(punishId)
+                .thenApplyAsync(punishmentDocument -> punishmentDocument.orElse(null));
     }
+
+    public String getPunishScreen(PunishmentDocument punishmentDocument) {
+        return null;
+    }
+
+    public CompletableFuture<PunishmentDocument> getActivePunish(UUID uniqueId, PunishmentType type) {
+        return getPlayerPunishments(uniqueId).thenApplyAsync(punishmentDocuments -> {
+
+            for (PunishmentDocument punishmentDocument : punishmentDocuments) {
+                if (punishmentDocument.getEndTime().isAfter(OffsetDateTime.now())
+                        && punishmentDocument.getPunishmentType().getId() == type.getId()) {
+
+                    return punishmentDocument;
+                }
+            }
+
+            return null;
+        });
+    }
+
+    public CompletableFuture<Boolean> isPunished(UUID uniqueId, PunishmentType type) {
+        return getActivePunish(uniqueId, type).thenApplyAsync(Objects::nonNull);
+    }
+
+    public CompletableFuture<PlayerDocument> getPlayerInfo(UUID uniqueId) {
+        return playerDatabaseClient.get(uniqueId)
+                .thenApplyAsync(playerDocument -> playerDocument.orElse(null));
+    }
+
+
+    public CompletableFuture<PunishmentDocument> getLatestPunishment(UUID uniqueId) {
+        return getPlayerPunishments(uniqueId).thenApplyAsync(punishmentDocuments -> {
+            return Collections.max(punishmentDocuments, Comparator.comparing(PunishmentDocument::getStartTime));
+        });
+    }
+
+    public CompletableFuture<List<PunishmentDocument>> getPlayerPunishments(UUID uniqueId) {
+        return CompletableFuture.supplyAsync(() -> {
+            PlayerDocument playerInfo = getPlayerInfo(uniqueId).join();
+            if (playerInfo == null) {
+                ProxyServer.getInstance().getLogger().log(Level.SEVERE, "No player data found with uuid: " + uniqueId);
+                return null;
+            }
+
+
+            List<PunishmentDocument> playerPunishments = new ArrayList<>();
+            for (UUID currentPunishmentId : playerInfo.getPunishmentIds()) {
+                playerPunishments.add(punishmentDatabaseClient.getSync(currentPunishmentId).orElse(null));
+            }
+
+            return playerPunishments;
+
+        });
+    }
+}

@@ -1,6 +1,7 @@
 package de.tiiita.util.mongodb.impl.punishments;
 
 import de.tiiita.punish.Punishment;
+import de.tiiita.punish.PunishmentType;
 import de.tiiita.punish.reason.PunishReason;
 import de.tiiita.util.mongodb.UUIDIndexedDocument;
 import java.time.OffsetDateTime;
@@ -14,6 +15,8 @@ public class PunishmentDocument implements UUIDIndexedDocument {
     private PunishReason reason;
     private UUID staffId;
     private UUID targetId;
+    private PunishmentType punishmentType;
+
 
     public PunishmentDocument(UUID uniqueId) {
         this.uniqueId = uniqueId;
@@ -26,6 +29,7 @@ public class PunishmentDocument implements UUIDIndexedDocument {
         punishmentDocument.setReason(punishment.getReason());
         punishmentDocument.setTargetId(punishment.getTargetId());
         punishmentDocument.setStaffId(punishment.getStaffId());
+        punishmentDocument.setPunishmentType(punishment.getType());
         return punishmentDocument;
     }
 
@@ -47,6 +51,14 @@ public class PunishmentDocument implements UUIDIndexedDocument {
 
     public void setTargetId(UUID targetId) {
         this.targetId = targetId;
+    }
+
+    public PunishmentType getPunishmentType() {
+        return punishmentType;
+    }
+
+    public void setPunishmentType(PunishmentType punishmentType) {
+        this.punishmentType = punishmentType;
     }
 
     @Override

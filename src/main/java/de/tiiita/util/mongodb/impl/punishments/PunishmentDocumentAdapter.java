@@ -1,5 +1,6 @@
 package de.tiiita.util.mongodb.impl.punishments;
 
+import de.tiiita.punish.PunishmentType;
 import de.tiiita.punish.reason.PunishReason;
 import de.tiiita.util.mongodb.DocumentAdapter;
 import org.bson.Document;
@@ -17,6 +18,7 @@ public class PunishmentDocumentAdapter implements DocumentAdapter<PunishmentDocu
         punishmentDocument.setReason(PunishReason.fromId(document.getInteger("reason")));
         punishmentDocument.setStartTime(OffsetDateTime.parse(document.getString("startTime")));
         punishmentDocument.setEndTime(OffsetDateTime.parse(document.getString("endTime")));
+        punishmentDocument.setPunishmentType(PunishmentType.fromName(document.getString("type")));
 
         return punishmentDocument;
     }
@@ -29,7 +31,8 @@ public class PunishmentDocumentAdapter implements DocumentAdapter<PunishmentDocu
                 .append("staffId", document.getStaffId())
                 .append("reason", document.getReason().getId())
                 .append("startTime", document.getStartTime())
-                .append("endTime", document.getEndTime());
+                .append("endTime", document.getEndTime())
+                .append("type", document.getPunishmentType().toString());
     }
 
     @Override
