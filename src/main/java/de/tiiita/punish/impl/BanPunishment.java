@@ -3,7 +3,6 @@ package de.tiiita.punish.impl;
 import de.tiiita.punish.PunishmentType;
 import de.tiiita.punish.reason.PunishReason;
 import de.tiiita.punish.Punishment;
-import de.tiiita.util.PlayerInfo;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
@@ -13,15 +12,17 @@ import java.util.UUID;
 
 public class BanPunishment implements Punishment {
 
-    private final UUID player;
-    private final UUID staff;
+    private final UUID uniqueId;
+    private final UUID targetId;
+    private final UUID staffId;
     private final PunishReason reason;
     private final OffsetDateTime startTime;
     private final OffsetDateTime endTime;
 
-    public BanPunishment(UUID player, UUID staff, PunishReason reason, OffsetDateTime startTime, OffsetDateTime endTime) {
-        this.player = player;
-        this.staff = staff;
+    public BanPunishment(UUID uniqueId, UUID targetId, UUID staffId, PunishReason reason, OffsetDateTime startTime, OffsetDateTime endTime) {
+        this.uniqueId = uniqueId;
+        this.targetId = targetId;
+        this.staffId = staffId;
         this.reason = reason;
         this.startTime = startTime;
         this.endTime = endTime;
@@ -43,18 +44,18 @@ public class BanPunishment implements Punishment {
     }
 
     @Override
-    public UUID getStaff() {
-        return staff;
+    public UUID getStaffId() {
+        return staffId;
     }
 
     @Override
-    public UUID getPlayer() {
-        return player;
+    public UUID getTargetId() {
+        return targetId;
     }
 
     @Override
-    public UUID getPunishId() {
-        return UUID.randomUUID();
+    public UUID getUniqueId() {
+        return uniqueId;
     }
 
     @Override
@@ -64,7 +65,7 @@ public class BanPunishment implements Punishment {
 
     @Override
     public void onPunish() {
-        ProxiedPlayer onlinePlayer = ProxyServer.getInstance().getPlayer(player);
+        ProxiedPlayer onlinePlayer = ProxyServer.getInstance().getPlayer(targetId);
         if (onlinePlayer == null) return;
 
         onlinePlayer.disconnect(new TextComponent());

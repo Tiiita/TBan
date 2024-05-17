@@ -24,8 +24,7 @@ public class ConnectionListener implements Listener {
         ProxiedPlayer player = event.getPlayer();
         UUID uuid = player.getUniqueId();
         if (banManager.isPunished(uuid)) {
-            int banID = banManager.getPunishId(uuid);
-            event.getPlayer().disconnect(banManager.getPunishScreen(banID));
+            //Check if ban
         }
     }
 }

@@ -21,11 +21,11 @@ public interface DocumentAdapter<T extends UUIDIndexedDocument> {
 
     /**
      * Converts a player document to a mongodb bson document.
-     * @param playerDocument The player document
+     * @param document The player document
      * @return returns the mongodb bson Document
      */
     @NotNull
-    Document toBson(@NotNull T playerDocument);
+    Document toBson(@NotNull T document);
 
     /**
      * Return an empty document with just the player's uuid.

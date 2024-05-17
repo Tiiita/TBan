@@ -4,14 +4,15 @@ import de.tiiita.util.ConfigWrapper;
 import de.tiiita.util.mongodb.Clients;
 import de.tiiita.util.mongodb.MongoDBCollectionClient;
 import de.tiiita.util.mongodb.config.ConnectionConfig;
-import de.tiiita.util.mongodb.impl.PunishmentDocument;
-import de.tiiita.util.mongodb.impl.PunishmentDocumentAdapter;
+import de.tiiita.util.mongodb.impl.punishments.PunishmentDocument;
+import de.tiiita.util.mongodb.impl.punishments.PunishmentDocumentAdapter;
 import net.md_5.bungee.api.plugin.Plugin;
 
 public final class TBan extends Plugin {
 
     private ConfigWrapper config;
     private MongoDBCollectionClient<PunishmentDocument> punishmentDatabaseClient;
+    private MongoDBCollectionClient<PunishmentDocument> playerDatabaseClient;
 
     @Override
     public void onEnable() {
