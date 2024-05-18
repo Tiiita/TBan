@@ -1,6 +1,6 @@
 package de.tiiita.command;
 
-import de.tiiita.punish.PunishManager;
+import de.tiiita.punish.PunishService;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.plugin.Command;
 
@@ -10,9 +10,9 @@ import net.md_5.bungee.api.plugin.Command;
  */
 public class PunishCommand extends Command {
 
-    private final PunishManager banManager;
+    private final PunishService banManager;
 
-    public PunishCommand(PunishManager banManager) {
+    public PunishCommand(PunishService banManager) {
         super("punish", "tban.punish");
         this.banManager = banManager;
     }

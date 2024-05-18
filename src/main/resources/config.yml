@@ -19,9 +19,9 @@ ban-screen:
   - '&b'
   - '&c&nYou appeal at yourdiscord.link'
 
-mute-screen: "\n&cYou have been muted. &7(%remaining% left)\n"
+mute-screen: "\n&7You have been muted. &c(%remaining% left)\n"
 
-
+punish-announcement: "&c%player%"
 
 reasons:
   1:

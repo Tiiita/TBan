@@ -1,16 +1,16 @@
 package de.tiiita.punish.reason;
 
-public class PunishReason {
+public class PunishmentReason {
 
     private final int id;
     private String name;
 
-    public PunishReason(int id, String name) {
+    public PunishmentReason(int id, String name) {
         this.id = id;
         this.name = name;
     }
 
-    public static PunishReason fromId(int id) {
+    public static PunishmentReason fromId(int id) {
         return null;
     }
 

@@ -41,6 +41,7 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
+                            <outputFile>C:\Users\Timo\Desktop\Development\Server\Bungee - Test Server\proxy\plugins\tban.jar</outputFile>
                             <createDependencyReducedPom>false</createDependencyReducedPom>
                         </configuration>
                     </execution>

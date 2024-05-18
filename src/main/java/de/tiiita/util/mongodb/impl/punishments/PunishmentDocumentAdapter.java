@@ -1,7 +1,10 @@
 package de.tiiita.util.mongodb.impl.punishments;
 
+import de.tiiita.punish.Punishment;
 import de.tiiita.punish.PunishmentType;
-import de.tiiita.punish.reason.PunishReason;
+import de.tiiita.punish.impl.BanPunishment;
+import de.tiiita.punish.impl.MutePunishment;
+import de.tiiita.punish.reason.PunishmentReason;
 import de.tiiita.util.mongodb.DocumentAdapter;
 import org.bson.Document;
 import org.jetbrains.annotations.NotNull;
@@ -9,34 +12,34 @@ import org.jetbrains.annotations.NotNull;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
-public class PunishmentDocumentAdapter implements DocumentAdapter<PunishmentDocument> {
+public class PunishmentDocumentAdapter implements DocumentAdapter<Punishment> {
     @Override
-    public PunishmentDocument fromBson(@NotNull Document document) {
-        final PunishmentDocument punishmentDocument = new PunishmentDocument(document.get("uniqueId", UUID.class));
-        punishmentDocument.setTargetId(document.get("targetId", UUID.class));
-        punishmentDocument.setStaffId(document.get("staffId", UUID.class));
-        punishmentDocument.setReason(PunishReason.fromId(document.getInteger("reason")));
-        punishmentDocument.setStartTime(OffsetDateTime.parse(document.getString("startTime")));
-        punishmentDocument.setEndTime(OffsetDateTime.parse(document.getString("endTime")));
-        punishmentDocument.setPunishmentType(PunishmentType.fromName(document.getString("type")));
-
-        return punishmentDocument;
+    public Punishment fromBson(@NotNull Document document) {
+        Punishment punishment = new Punishment();
+        punishment.setType(PunishmentType.fromName(document.getString("type")));
+        punishment.setTargetId(document.get("targetId", UUID.class));
+        punishment.setStaffId(document.get("staffId", UUID.class));
+        punishment.setReason(PunishmentReason.fromId(document.getInteger("reason")));
+        punishment.setStartTime(OffsetDateTime.parse(document.getString("startTime")));
+        punishment.setEndTime(OffsetDateTime.parse(document.getString("endTime")));
+        punishment.setUniqueId(document.get("uuid", UUID.class));
+        return punishment;
     }
 
     @Override
-    public @NotNull Document toBson(@NotNull PunishmentDocument document) {
+    public @NotNull Document toBson(@NotNull Punishment punishment) {
         return new Document()
-                .append("uniqueId", document.getUniqueId())
-                .append("targetId", document.getTargetId())
-                .append("staffId", document.getStaffId())
-                .append("reason", document.getReason().getId())
-                .append("startTime", document.getStartTime())
-                .append("endTime", document.getEndTime())
-                .append("type", document.getPunishmentType().toString());
+                .append("uniqueId", punishment.getUniqueId())
+                .append("targetId", punishment.getTargetId())
+                .append("staffId", punishment.getStaffId())
+                .append("reason", punishment.getReason().getId())
+                .append("startTime", punishment.getStartTime())
+                .append("endTime", punishment.getEndTime())
+                .append("type", punishment.getType().toString());
     }
 
     @Override
-    public PunishmentDocument getEmpty(UUID uuid) {
-        return new PunishmentDocument(uuid);
+    public Punishment getEmpty(UUID uuid) {
+        return new Punishment();
     }
 }
