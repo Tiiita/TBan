@@ -10,7 +10,7 @@ import net.md_5.bungee.api.plugin.Command;
 public class PlayerInfoCommand extends Command {
 
     public PlayerInfoCommand() {
-        super("playerinfo", "proxy.command.playerinfo", "pinfo", "pi");
+        super("playerinfo", "tban.playerinfo", "pinfo", "pi");
     }
 
     @Override

@@ -1,21 +1,21 @@
 package de.tiiita.punish;
 
-import de.tiiita.punish.reason.PunishmentReason;
+import de.tiiita.util.reason.Reason;
 import de.tiiita.util.mongodb.UUIDIndexedDocument;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
 public class Punishment implements UUIDIndexedDocument {
-    protected UUID uniqueId;
-    protected UUID targetId;
-    protected UUID staffId;
-    protected PunishmentReason reason;
-    protected OffsetDateTime startTime;
-    protected OffsetDateTime endTime;
-    protected PunishmentType type;
+    private UUID uniqueId;
+    private UUID targetId;
+    private UUID staffId;
+    private Reason reason;
+    private OffsetDateTime startTime;
+    private OffsetDateTime endTime;
+    private PunishmentType type;
 
-    public Punishment(UUID uniqueId, UUID targetId, UUID staffId, PunishmentReason reason, OffsetDateTime startTime, OffsetDateTime endTime, PunishmentType type) {
+    protected Punishment(UUID uniqueId, UUID targetId, UUID staffId, Reason reason, OffsetDateTime startTime, OffsetDateTime endTime, PunishmentType type) {
         this.uniqueId = uniqueId;
         this.targetId = targetId;
         this.staffId = staffId;
@@ -30,13 +30,13 @@ public class Punishment implements UUIDIndexedDocument {
         return startTime;
     }
 
-    
+
     public OffsetDateTime getEndTime() {
         return endTime;
     }
 
-    
-    public PunishmentReason getReason() {
+
+    public Reason getReason() {
         return reason;
     }
 
@@ -44,33 +44,33 @@ public class Punishment implements UUIDIndexedDocument {
         return staffId;
     }
 
-    
+
     public UUID getTargetId() {
         return targetId;
     }
 
-    
+
     public UUID getUniqueId() {
         return uniqueId;
     }
 
-    
+
     public PunishmentType getType() {
         return type;
     }
 
-    
+
     public void setStartTime(OffsetDateTime dateTime) {
         this.startTime = dateTime;
     }
 
-    
+
     public void setEndTime(OffsetDateTime dateTime) {
         this.endTime = dateTime;
     }
 
-    
-    public void setReason(PunishmentReason reason) {
+
+    public void setReason(Reason reason) {
         this.reason = reason;
     }
 

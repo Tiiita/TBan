@@ -5,7 +5,6 @@ mongodb: #We are using mongodb, please set up a mongodb database and specify the
   username: "yourUsername"
   password: "yourPassword"
 
-
 ban-screen:
   - '&4&lBan'
   - '&a'
@@ -27,8 +26,15 @@ reasons:
   1:
     type: 'ban' #Available types: "ban", "mute"
     display-name: 'Cheating'
-    duration:
+    durations: #Availlable Units: y, mo, d, h, m
       1: '30D'
       2: '60D'
-      3: 'Permanently'
+      3: '-1' #-1 = Permanently
+  2:
+    type: 'ban'
+    display-name: 'Cheating'
+    durations:
+      1: '30D'
+      2: '60D'
+      3: '-1'
 

@@ -9,6 +9,11 @@ import net.md_5.bungee.event.EventHandler;
  */
 public class ReportListener implements Listener {
 
+    private final ReportService reportService;
+
+    public ReportListener(ReportService reportService) {
+        this.reportService = reportService;
+    }
 
     @EventHandler
     public void onReport(ReportEvent event) {

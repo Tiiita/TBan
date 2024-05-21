@@ -1,5 +1,6 @@
 package de.tiiita.report;
 
+import net.md_5.bungee.api.plugin.Cancellable;
 import net.md_5.bungee.api.plugin.Event;
 
 import java.util.UUID;
@@ -8,26 +9,25 @@ import java.util.UUID;
  * Created on Januar 29, 2023 | 14:19:46
  * (●'◡'●)
  */
-public class ReportEvent extends Event {
-    private final UUID reporterUUID;
-    private final UUID targetUUID;
-    private final int reasonID;
+public class ReportEvent extends Event implements Cancellable {
+    private final Report report;
+    private boolean cancelled;
 
-    public ReportEvent(UUID reporterUUID, UUID targetUUID, int reasonID) {
-        this.reporterUUID = reporterUUID;
-        this.targetUUID = targetUUID;
-        this.reasonID = reasonID;
+    public ReportEvent(Report report) {
+        this.report = report;
     }
 
-    public UUID getReporterUUID() {
-        return reporterUUID;
+    public Report getReport() {
+        return report;
     }
 
-    public UUID getTargetUUID() {
-        return targetUUID;
+    @Override
+    public boolean isCancelled() {
+        return cancelled;
     }
 
-    public int getReasonID() {
-        return reasonID;
+    @Override
+    public void setCancelled(boolean cancel) {
+        this.cancelled = cancel;
     }
 }

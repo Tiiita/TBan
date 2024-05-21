@@ -1,16 +1,19 @@
 package de.tiiita.punish;
 
-import de.tiiita.punish.reason.PunishmentReason;
-import de.tiiita.util.ConfigWrapper;
-import de.tiiita.util.MojangNameFetcher;
-import de.tiiita.util.mongodb.DateTimeDifferenceFormatter;
+import de.tiiita.minecraft.bungee.BungeeConfig;
+import de.tiiita.minecraft.util.MojangProfileFetcher;
+import de.tiiita.util.*;
 import de.tiiita.util.mongodb.impl.player.PlayerDocument;
 import de.tiiita.util.mongodb.MongoDBCollectionClient;
+import de.tiiita.util.reason.Reason;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.TextComponent;
+import org.jetbrains.annotations.Nullable;
 
+import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.*;
+import java.util.Collections;
 
 /**
  * This class uses sync database operations. It will block the thread it is called in.
@@ -21,10 +24,10 @@ public class PunishService {
 
     private final MongoDBCollectionClient<Punishment> punishmentDatabaseClient;
     private final MongoDBCollectionClient<PlayerDocument> playerDatabaseClient;
-    private final ConfigWrapper config;
+    private final BungeeConfig config;
 
     public PunishService(MongoDBCollectionClient<Punishment> punishmentDatabaseClient,
-                         MongoDBCollectionClient<PlayerDocument> playerDatabaseClient, ConfigWrapper config) {
+                         MongoDBCollectionClient<PlayerDocument> playerDatabaseClient, BungeeConfig config) {
         this.punishmentDatabaseClient = punishmentDatabaseClient;
         this.playerDatabaseClient = playerDatabaseClient;
         this.config = config;
@@ -38,13 +41,15 @@ public class PunishService {
      * @param uniqueId   the uuid of the player that should be punished.
      * @param punishment the implemented punishment.
      */
-    public void punish(UUID uniqueId, Punishment punishment) {
+
+    public void punish(Punishment punishment) {
+        ThreadChecker.asyncOnly();
         PunishEvent event = new PunishEvent(punishment);
         ProxyServer.getInstance().getPluginManager().callEvent(event);
         if (event.isCancelled()) return;
 
         punishmentDatabaseClient.upsertSync(punishment);
-        playerDatabaseClient.upsertSync(uniqueId, playerDocument -> {
+        playerDatabaseClient.upsertSync(punishment.getUniqueId(), playerDocument -> {
 
             List<UUID> punishments = playerDocument.getPunishmentIds();
             punishments.add(punishment.getUniqueId());
@@ -65,11 +70,12 @@ public class PunishService {
      *
      * @param punishId the uuid of the punishment, this is not the uuid of a player!
      */
+
     public void removePunish(UUID punishId) {
         punishmentDatabaseClient.upsertSync(punishId, punishmentDocument -> {
             punishmentDocument.setEndTime(OffsetDateTime.now());
 
-            PunishmentReason reason = punishmentDocument.getReason();
+            Reason reason = punishmentDocument.getReason();
             reason.setName(reason.getName() + " (Removed)");
             punishmentDocument.setReason(reason);
             return punishmentDocument;
@@ -84,7 +90,9 @@ public class PunishService {
      * @param punishId the uuid of the punishment.
      * @return the found punishment bind to the punishId or null if no punish was found.
      */
+
     public Punishment getPunishment(UUID punishId) {
+        ThreadChecker.asyncOnly();
         return punishmentDatabaseClient.get(punishId).join().orElse(null);
     }
 
@@ -96,7 +104,9 @@ public class PunishService {
      * @param type     the type the active punishments should be filtered of.
      * @return the found active punishment or null if the player does not have any active punishments with the specific type.
      */
+
     public Punishment getActivePunish(UUID uniqueId, PunishmentType type) {
+        ThreadChecker.asyncOnly();
         Set<Punishment> playerPunishments = getPlayerPunishments(uniqueId);
 
         for (Punishment punishment : playerPunishments) {
@@ -117,7 +127,9 @@ public class PunishService {
      * @return true if the player has an active punishment with the type, false if not.
      * @see #getActivePunish(UUID, PunishmentType)
      */
+
     public Boolean isPunished(UUID uniqueId, PunishmentType type) {
+        ThreadChecker.asyncOnly();
         return getActivePunish(uniqueId, type) != null;
     }
 
@@ -128,7 +140,9 @@ public class PunishService {
      * @param uniqueId the uuid of the player.
      * @return the found document, or null if there is no entry for that uuid.
      */
+
     public PlayerDocument getPlayerInfo(UUID uniqueId) {
+        ThreadChecker.asyncOnly();
         return playerDatabaseClient.get(uniqueId).join().orElse(null);
     }
 
@@ -138,7 +152,9 @@ public class PunishService {
      * @param uniqueId the uuid of the player.
      * @return the latest punishment or null if the player has not got any punishments yet.
      */
+
     public Punishment getLatestPunishment(UUID uniqueId) {
+        ThreadChecker.asyncOnly();
         Set<Punishment> punishments = getPlayerPunishments(uniqueId);
         return Collections.max(punishments, Comparator.comparing(Punishment::getStartTime));
     }
@@ -149,7 +165,9 @@ public class PunishService {
      * @param uniqueId uuid of the player.
      * @return the set of the punishments, empty if no history or no player was found.
      */
+
     public Set<Punishment> getPlayerPunishments(UUID uniqueId) {
+        ThreadChecker.asyncOnly();
         PlayerDocument playerInfo = getPlayerInfo(uniqueId);
         if (playerInfo == null) return Collections.emptySet();
 
@@ -163,12 +181,31 @@ public class PunishService {
 
 
     /**
+     * Calculates the end time of a punishment.
+     * @param uniqueId the unique id of the target that should get punished.
+     * @param reason the reason of the punishment.
+     * @param startTime the time when the punishment should start.
+     * @return the end time or null if no player history or player was found.
+     * @see #getSamePunishmentCount(PlayerDocument, Reason)
+     */
+    @Nullable
+    public OffsetDateTime getPunishEnd(UUID uniqueId, Reason reason, OffsetDateTime startTime) {
+        ThreadChecker.asyncOnly();
+        PlayerDocument playerDocument = playerDatabaseClient.get(uniqueId).join().orElse(null);
+        if (playerDocument == null) return null;
+
+        Duration duration = reason.getDurations().get(getSamePunishmentCount(playerDocument, reason));
+        return startTime.plus(duration);
+    }
+
+    /**
      * Translates the punishment into a ban screen or a message that can be broadcast.
      *
      * @param punishment the punishment that should be translated to a message for users.
      * @return the translated message or an error message if the type is not available.
      */
     public String getPunishScreen(Punishment punishment) {
+        ThreadChecker.asyncOnly();
         switch (punishment.getType()) {
             case IPBAN:
             case BAN: {
@@ -196,7 +233,24 @@ public class PunishService {
         }
     }
 
+
+    private int getSamePunishmentCount(PlayerDocument playerDocument, Reason reason) {
+        int punishmentsWithSameReason = 0;
+        List<UUID> punishmentHistory = playerDocument.getPunishmentIds();
+        for (UUID uuid : punishmentHistory) {
+            Punishment punishment = punishmentDatabaseClient.get(uuid).join().orElse(null);
+            if (punishment == null)
+                throw new IllegalStateException("Punishment in " + playerDocument.getUniqueId() + "'s history cannot be found in punishment collection.");
+            if (punishment.getReason().getId() != reason.getId()) continue;
+
+            punishmentsWithSameReason++;
+        }
+
+        return punishmentsWithSameReason;
+    }
+
     private String translatePlaceholder(Punishment punishment, String s) {
+        ThreadChecker.asyncOnly();
         String text = s.replaceAll("&", "§")
                 .replaceAll("%reason%", punishment.getReason().getName())
                 .replaceAll("%punishId%", punishment.getUniqueId().toString())
@@ -208,10 +262,10 @@ public class PunishService {
 
         if (text.contains(playerPlaceholder)) {
 
-            text = text.replaceAll(playerPlaceholder, MojangNameFetcher.fetchNameSafely(punishment.getTargetId()));
+            text = text.replaceAll(playerPlaceholder, MojangProfileFetcher.fetchDataSafely(punishment.getTargetId().toString()));
         }
         if (text.contains(staffPlaceholder)) {
-            text = text.replaceAll(playerPlaceholder, MojangNameFetcher.fetchNameSafely(punishment.getStaffId()));
+            text = text.replaceAll(playerPlaceholder, MojangProfileFetcher.fetchDataSafely(punishment.getStaffId().toString()));
         }
 
         return text;
